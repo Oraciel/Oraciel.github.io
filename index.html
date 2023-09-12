@@ -30,9 +30,8 @@
             let acc = position.coords.accuracy;
             let speed = position.coords.speed;
             let date = position.timestamp;
-            div.innerHTML = "<h1>Exercice 2 : Localisation avec smartphone et HTML</h1><h2>Avec watchPosition</h2>Latitude: " + lat + "<br>Longitude: " + lon + "<br>Altitude: " + alt + "<br>Accuracy: " + acc + "<br>Speed: " + speed + "<br>Date: " + date;
+            div.innerHTML = "<h2>Avec watchPosition</h2>Latitude: " + lat + "<br>Longitude: " + lon + "<br>Altitude: " + alt + "<br>Accuracy: " + acc + "<br>Speed: " + speed + "<br>Date: " + date;
             document.body.appendChild(div);
-            setTimeout(watchPosition, 2000);
         }
 
         function showPosition(position) {
@@ -45,10 +44,9 @@
             let date = position.timestamp;
             div.innerHTML = "<h1>Exercice 2 : Localisation avec smartphone et HTML</h1><h2>Avec getCurrentPosition</h2>Latitude: " + lat + "<br>Longitude: " + lon + "<br>Altitude: " + alt + "<br>Accuracy: " + acc + "<br>Speed: " + speed + "<br>Date: " + date;
             document.body.appendChild(div);
-            setTimeout(getCurrentPosition, 2000);
         }
-        showPosition();
-        showPositionWatch();
+        getCurrentPosition();
+        watchPosition();
     </script>
 </body>
 </html>
