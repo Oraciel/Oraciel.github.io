@@ -46,14 +46,9 @@
         console.error("Erreur de géolocalisation: " + erreur.message);
     }
 
-    // Obtenir la position actuelle
     navigator.geolocation.getCurrentPosition(afficherPosition, erreurPosition);
 
-    // Mettre à jour la position en temps réel
     const watchID = navigator.geolocation.watchPosition(afficherPositionMaj, erreurPosition);
-
-    // Pour arrêter la mise à jour en temps réel (par exemple, après un certain temps ou via un bouton)
-    // navigator.geolocation.clearWatch(watchID);
 </script>
 </body>
 </html>
