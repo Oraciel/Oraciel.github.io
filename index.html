@@ -39,7 +39,7 @@
 
         function showPosition(position) {
             let div = document.createElement("div");
-            while (true){
+            while (true) {
                 let lat = position.coords.latitude;
                 let lon = position.coords.longitude;
                 let alt = position.coords.altitude;
@@ -50,10 +50,9 @@
                 document.body.appendChild(div);
                 setTimeout(getCurrentPosition, 2000);
             }
-
-            showPosition();
-            showPositionWatch();
         }
+        showPosition();
+        showPositionWatch();
     </script>
 </body>
 </html>
