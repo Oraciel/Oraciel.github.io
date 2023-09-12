@@ -15,7 +15,15 @@
         }
 
         getCurrentPosition();
-        
+
+        function showPosition(position) {
+            let lat = position.coords.latitude;
+            let lon = position.coords.longitude;
+            let div = document.createElement("div");
+            div.innerHTML = "Latitude: " + lat + "<br>Longitude: " + lon;
+            document.body.appendChild(div);
+        }
+
     </script>
 </body>
 </html>
