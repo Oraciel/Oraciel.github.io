@@ -1,52 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GeoCarto</title>
-    <meta charset="utf-8"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation</title>
 </head>
 <body>
+<h1>Données de Géolocalisation</h1>
+<p><strong>Position actuelle:</strong></p>
+<p>Latitude: <span id="latitude"></span></p>
+<p>Longitude: <span id="longitude"></span></p>
+<p>Altitude: <span id="altitude"></span></p>
+<p>Précision: <span id="precision"></span></p>
+<p>Vitesse: <span id="vitesse"></span> m/s</p>
+<p>Date: <span id="date"></span></p>
+
+<p><strong>Position mise à jour en temps réel:</strong></p>
+<p>Latitude: <span id="latMaj"></span></p>
+<p>Longitude: <span id="lonMaj"></span></p>
+<p>Altitude: <span id="altMaj"></span></p>
+<p>Précision: <span id="precMaj"></span></p>
+<p>Vitesse: <span id="vitesseMaj"></span> m/s</p>
+<p>Date: <span id="dateMaj"></span></p>
+
 <script>
-    function getCurrentPosition() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
-    }
-    function watchPosition() {
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(showPositionWatch);
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
+    function afficherPosition(position) {
+        document.getElementById("latitude").textContent = position.coords.latitude;
+        document.getElementById("longitude").textContent = position.coords.longitude;
+        document.getElementById("altitude").textContent = position.coords.altitude || "Non disponible";
+        document.getElementById("precision").textContent = position.coords.accuracy + " mètres";
+        document.getElementById("vitesse").textContent = position.coords.speed + " m/s";
+        document.getElementById("date").textContent = new Date(position.timestamp).toLocaleString();
     }
 
-
-    function showPositionWatch(position){
-        let div = document.createElement("div");
-        let lat = position.coords.latitude;
-        let lon = position.coords.longitude;
-        let alt = position.coords.altitude;
-        let acc = position.coords.accuracy;
-        let speed = position.coords.speed;
-        let date = position.timestamp;
-        div.innerHTML = "<h2>Avec watchPosition</h2>Latitude: " + lat + "<br>Longitude: " + lon + "<br>Altitude: " + alt + "<br>Accuracy: " + acc + "<br>Speed: " + speed + "<br>Date: " + date;
-        document.body.appendChild(div);
+    function afficherPositionMaj(position) {
+        document.getElementById("latMaj").textContent = position.coords.latitude;
+        document.getElementById("lonMaj").textContent = position.coords.longitude;
+        document.getElementById("altMaj").textContent = position.coords.altitude || "Non disponible";
+        document.getElementById("precMaj").textContent = position.coords.accuracy + " mètres";
+        document.getElementById("vitesseMaj").textContent = position.coords.speed + " m/s";
+        document.getElementById("dateMaj").textContent = new Date(position.timestamp).toLocaleString();
     }
 
-    function showPosition(position) {
-        let div = document.createElement("div");
-        let lat = position.coords.latitude;
-        let lon = position.coords.longitude;
-        let alt = position.coords.altitude;
-        let acc = position.coords.accuracy;
-        let speed = position.coords.speed;
-        let date = position.timestamp;
-        div.innerHTML = "<h1>Exercice 2 : Localisation avec smartphone et HTML</h1><h2>Avec getCurrentPosition</h2>Latitude: " + lat + "<br>Longitude: " + lon + "<br>Altitude: " + alt + "<br>Accuracy: " + acc + "<br>Speed: " + speed + "<br>Date: " + date;
-        document.body.appendChild(div);
+    function erreurPosition(erreur) {
+        console.error("Erreur de géolocalisation: " + erreur.message);
     }
-    getCurrentPosition();
-    watchPosition();
+
+    // Obtenir la position actuelle
+    navigator.geolocation.getCurrentPosition(afficherPosition, erreurPosition);
+
+    // Mettre à jour la position en temps réel
+    const watchID = navigator.geolocation.watchPosition(afficherPositionMaj, erreurPosition);
+
+    // Pour arrêter la mise à jour en temps réel (par exemple, après un certain temps ou via un bouton)
+    // navigator.geolocation.clearWatch(watchID);
 </script>
 </body>
 </html>
