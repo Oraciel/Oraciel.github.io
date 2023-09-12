@@ -8,23 +8,14 @@
     <script>
         function getCurrentPosition() {
             if (navigator.geolocation) {
-                return navigator.geolocation.getCurrentPosition(showPosition);
+                navigator.geolocation.getCurrentPosition(showPosition);
             } else {
                 alert("Geolocation is not supported by this browser.");
             }
         }
 
         getCurrentPosition();
-
-        function showPosition(position) {
-            let lat = position.coords.latitude;
-            let lon = position.coords.longitude;
-            let div = document.createElement("div");
-            div.innerHTML = "Latitude: " + lat + "<br>Longitude: " + lon;
-            document.body.appendChild(div);
-        }
-
-        showPosition(getCurrentPosition());
+        
     </script>
 </body>
 </html>
