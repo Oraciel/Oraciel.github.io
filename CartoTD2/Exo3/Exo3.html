@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ma Carte avec GeoJSON</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div id="map" style="height: 600px;"></div>
+</body>
+</html>
+
+<script>
+    var map = L.map('map').setView([46.603354, 1.888334], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    function getCommunesData() {
+        var url = 'https://api-adresse.data.gouv.fr/search/?q=Avenue&limit=100';
+
+        $.getJSON(url, function(data) {
+            console.log(data)
+            L.geoJSON(data, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties && feature.properties.name) {
+                        layer.bindPopup(feature.properties.name);
+                    }
+                }
+            }).addTo(map);
+        })
+            .fail(function() {
+                console.log('Erreur lors de la récupération des données sur les communes.');
+            });
+    }
+
+    getCommunesData();
+
+
+
+
+</script>
