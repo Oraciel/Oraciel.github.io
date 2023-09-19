@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ma Carte</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="maCarte" style="height: 400px;"></div>
+</body>
+</html>
+
+<script>
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+
+        var maCarte = L.map('maCarte').setView([latitude, longitude], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(maCarte);
+
+        L.marker([latitude, longitude]).addTo(maCarte)
+            .bindPopup('Vous êtes ici.')
+            .openPopup();
+
+        L.marker([43.7102, 7.2620]).addTo(maCarte)
+            .bindPopup('Nice, centre ville.')
+            .openPopup();
+    });
+
+
+</script>
