@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ma Carte</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+<div id="maCarte" style="height: 700px;"></div>
+</body>
+</html>
+
+<script>
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        var precision = position.coords.accuracy;
+
+        var maCarte = L.map('maCarte').setView([latitude, longitude], 13);
+
+        L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+            attribution: 'Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.'
+        }).addTo(maCarte);
+
+        L.marker([latitude, longitude]).addTo(maCarte)
+            .bindPopup('Vous êtes ici.')
+            .openPopup();
+
+        var triangleCoords = [
+            [32.321384, -64.75737],  // Bermuda
+            [25.0343, -77.3963],     // Miami
+            [18.4663, -66.1183]      // San Juan
+        ];
+
+        L.polygon(triangleCoords, {color: 'red'}).addTo(maCarte);
+
+        L.circle([latitude, longitude], {
+            color: 'blue',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 600
+        }).addTo(maCarte);
+
+        var marseille = [43.2965, 5.3698];
+
+        var ligne = L.polyline([marseille, [latitude, longitude]], {color: 'green'}).addTo(maCarte);
+
+        var distance = maCarte.distance(marseille, [latitude, longitude]);
+        distance = distance / 1000;
+
+        ligne.bindPopup('Distance entre Marseille et votre position: ' + distance.toFixed(2) + ' km').openPopup();
+    });
+
+
+
+
+
+</script>
