@@ -137,21 +137,25 @@
 
 
 
-        window.addEventListener("deviceorientation", handleDeviceOrientation, true);
-        
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+        } else {
+            console.log("Sorry, your browser doesn't support DeviceOrientation");
+        }
+
+
         let sharkMesh;
 
         function handleDeviceOrientation(event) {
             if (sharkMesh) {
-                const alpha = event.alpha ? BABYLON.Tools.ToRadians(event.alpha) : 0; // rotation around z-axis
-                const beta = event.beta ? BABYLON.Tools.ToRadians(event.beta) : 0; // rotation around x-axis
-                const gamma = event.gamma ? BABYLON.Tools.ToRadians(event.gamma) : 0; // rotation around y-axis
+                const alpha = event.alpha ? BABYLON.Tools.ToRadians(event.alpha) : 0;
+                const beta = event.beta ? BABYLON.Tools.ToRadians(event.beta) : 0;
+                const gamma = event.gamma ? BABYLON.Tools.ToRadians(event.gamma) : 0;
 
-                sharkMesh.rotation.x = beta;
-                sharkMesh.rotation.y = gamma;
-                sharkMesh.rotation.z = alpha;
+                sharkMesh.rotationQuaternion = BABYLON.Quaternion.RotationYawPitchRoll(alpha, beta, gamma);
             }
         }
+
 
 
         BABYLON.SceneLoader.ImportMesh("", Assets.meshes.shark.rootUrl, Assets.meshes.shark.filename, scene, function (meshes) {
