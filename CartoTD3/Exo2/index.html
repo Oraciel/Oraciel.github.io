@@ -155,6 +155,7 @@
 
         BABYLON.SceneLoader.ImportMesh("", Assets.meshes.shark.rootUrl, Assets.meshes.shark.filename, scene, function (meshes) {
             sharkMesh = meshes[0];
+            sharkMesh.position = new BABYLON.Vector3(150, 0, 0);
             sharkMesh.scaling = new BABYLON.Vector3(10, 10, 10);
         });
 
