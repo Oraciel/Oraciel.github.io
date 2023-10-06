@@ -49,4 +49,6 @@ window.onload = function() {
         drawTriangle2(220, 25);
         drawTriangle3(120, 245);
     };
+
+
 };

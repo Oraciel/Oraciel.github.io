@@ -7,5 +7,38 @@
 </head>
 <body>
     <canvas id="myCanvas" width="800" height="600"></canvas>
+
+    <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ciel -->
+        <rect x="0" y="0" width="800" height="400" fill="lightblue" id="sky" />
+
+        <!-- Mer -->
+        <rect x="0" y="400" width="800" height="200" fill="blue" id="sea" />
+
+        <!-- Soleil -->
+        <circle cx="100" cy="100" r="50" fill="yellow" id="sun" />
+
+        <!-- Maison -->
+        <rect x="500" y="250" width="150" height="150" fill="brown" id="house" />
+        <polygon points="500,250 575,150 650,250" fill="red" id="roof" />
+    </svg>
+
+    <script>
+        document.querySelectorAll('rect, circle, polygon').forEach(element => {
+            element.addEventListener('mouseover', function() {
+                this.style.fill = 'gray';
+            });
+            element.addEventListener('mouseout', function() {
+                this.style.fill = '';
+            });
+        });
+
+        document.querySelectorAll('rect, circle, polygon').forEach(element => {
+            element.addEventListener('click', function() {
+                this.style.fill = 'purple';
+            });
+        });
+    </script>
+
 </body>
 </html>
