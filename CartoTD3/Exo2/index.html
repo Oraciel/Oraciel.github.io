@@ -138,20 +138,21 @@
 
 
         window.addEventListener("deviceorientation", handleDeviceOrientation, true);
-
+        
         let sharkMesh;
 
         function handleDeviceOrientation(event) {
             if (sharkMesh) {
-                const alpha = event.alpha ? THREE.Math.degToRad(event.alpha) : 0; // rotation around z-axis
-                const beta = event.beta ? THREE.Math.degToRad(event.beta) : 0; // rotation around x-axis
-                const gamma = event.gamma ? THREE.Math.degToRad(event.gamma) : 0; // rotation around y-axis
+                const alpha = event.alpha ? BABYLON.Tools.ToRadians(event.alpha) : 0; // rotation around z-axis
+                const beta = event.beta ? BABYLON.Tools.ToRadians(event.beta) : 0; // rotation around x-axis
+                const gamma = event.gamma ? BABYLON.Tools.ToRadians(event.gamma) : 0; // rotation around y-axis
 
                 sharkMesh.rotation.x = beta;
                 sharkMesh.rotation.y = gamma;
                 sharkMesh.rotation.z = alpha;
             }
         }
+
 
         BABYLON.SceneLoader.ImportMesh("", Assets.meshes.shark.rootUrl, Assets.meshes.shark.filename, scene, function (meshes) {
             sharkMesh = meshes[0];
