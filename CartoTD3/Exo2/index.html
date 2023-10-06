@@ -5,6 +5,8 @@
 
     <title>Babylon.js</title>
 
+    <script src="babylone.js"></script>
+
     <!-- Babylon.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
     <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
@@ -65,7 +67,7 @@
         // This creates a basic Babylon Scene object (non-mesh)
         var scene = new BABYLON.Scene(engine);
 
-        var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(270), BABYLON.Tools.ToRadians(65), 200, BABYLON.Vector3.Zero(), scene);
+        var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(270), BABYLON.Tools.ToRadians(65), 500, BABYLON.Vector3.Zero(), scene);
 
         // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
@@ -95,15 +97,26 @@
         ground.material = lavaMaterial;
 
 
+        BABYLON.SceneLoader.ImportMesh("", Assets.meshes.solar_system.rootUrl, Assets.meshes.solar_system.filename, scene, function (meshes) {
+            meshes[0].scaling = new BABYLON.Vector3(100, 100, 100);
+            meshes[0].position = new BABYLON.Vector3(0, 100, 0);
+        });
 
         BABYLON.SceneLoader.ImportMesh("", Assets.meshes.Yeti.rootUrl, Assets.meshes.Yeti.filename, scene, function(newMeshes){
             newMeshes[0].scaling = new BABYLON.Vector3(1, 1, 1);
+        });
+
+        BABYLON.SceneLoader.ImportMesh("", Assets.meshes.ufo.rootUrl, Assets.meshes.ufo.filename, scene, function (meshes) {
+            meshes[0].scaling = new BABYLON.Vector3(100, 100, 100);
+            meshes[0].position = new BABYLON.Vector3(0, 120, 0);
+
         });
 
         var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
         sphere.position.y = 4;
         sphere.position.x = 10;
         sphere.position.z = 10;
+
 
         var furMaterial = new BABYLON.FurMaterial("fur", scene);
         furMaterial.furLength = 4;
@@ -120,8 +133,6 @@
 
         var quality = 30;
         var shells = BABYLON.FurMaterial.FurifyMesh(sphere, quality);
-
-
 
         return scene;
     };
