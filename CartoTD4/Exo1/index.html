@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+<body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        
+        var createScene = function () {
+        
+            class TileId {
+                constructor(x, y, zoom) {
+                    this.x = x;
+                    this.y = y;
+                    this.zoom = zoom;
+                }
+        
+                get children() {
+                    return [
+                        new TileId(this.x * 2, this.y * 2, this.zoom + 1),
+                        new TileId(this.x * 2 + 1, this.y * 2, this.zoom + 1),
+                        new TileId(this.x * 2, this.y * 2 + 1, this.zoom + 1),
+                        new TileId(this.x * 2 + 1, this.y * 2 + 1, this.zoom + 1)];
+                }
+            }
+        
+        	var scene = new BABYLON.Scene(engine);
+            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+            scene.clearColor = BABYLON.Color3.Black;
+        
+        	new BABYLON.DirectionalLight("hemi", new BABYLON.Vector3(0, 0, 1), scene);
+        	new BABYLON.DirectionalLight("hemi", new BABYLON.Vector3(0, -1, -1), scene);
+        	
+        	var camera = new BABYLON.ArcRotateCamera("camera1",  0, 0, 0, new BABYLON.Vector3(0, 0, 0), scene);
+          	camera.setPosition(new BABYLON.Vector3(0, 1, -2));
+            camera.lowerRadiusLimit = 1.05;
+            camera.upperRadiusLimit = 3;
+            camera.wheelDeltaPercentage = .01;
+            camera.minZ = .01;
+            camera.maxZ = 5;
+        	camera.attachControl(canvas, true);
+        
+            var up = new BABYLON.Vector3(0, 1, 0);
+        
+            var getTileAngle = function(tileY, tileZ) {
+                var tileR = 2 ** tileZ;
+                var tileS = 2 * Math.PI / tileR;
+                var y = Math.PI - tileY * tileS;
+        
+                if (2 * tileY < tileR) {
+                    // northern hemisphere, use bottom edge
+                    y -= tileS;
+                }
+        
+                var gd = 2 * Math.atan(Math.exp(y)) - Math.PI / 2;
+                return tileS * Math.cos(gd);
+            }
+        
+            var vertexDataMap = {};
+        
+            var getVertexDataForTile = function(tileY, tileZ) {
+                
+                var key = tileY + ":" + tileZ;
+        
+                if (key in vertexDataMap) {
+                    return vertexDataMap[key];
+                }
+        
+                var tileR = 2 ** tileZ;
+                var tileS = 2 * Math.PI / tileR;
+                var ty = Math.PI - tileY * tileS;
+        
+                //Set arrays for positions and indices
+                var positions = [];
+                var indices = [];
+                var uvs = [];
+                var subdivisions = 4;
+        
+                for (var sy = 0; sy <= subdivisions + .5; sy++)
+                {
+                    var v = sy / subdivisions;
+                    var y = ty - tileS * (.003 + v * .994);
+                    var gd = 2 * Math.atan(Math.exp(y)) - Math.PI / 2;
+                    var pz = Math.sin(gd);
+                    var cos = Math.cos(gd);
+        
+                    for (var sx = 0; sx <= subdivisions + .5; sx++)
+                    {
+                        var u = sx / subdivisions;
+                        var x = tileS * (.003 + u * .994);
+                        var px = Math.cos(x);
+                        var py = Math.sin(x);
+                        var p = new BABYLON.Vector3(px * cos, pz, py * cos);
+                        positions.push(p.x);
+                        positions.push(p.y);
+                        positions.push(p.z);
+                        uvs.push(u);
+                        uvs.push(1 - v);
+        
+                        if (sx < subdivisions && sy < subdivisions) 
+                        {
+                            var idx = sy * (subdivisions + 1) + sx;
+                            indices.push(idx);
+                            indices.push(idx + subdivisions + 1);
+                            indices.push(idx + 1);
+                            indices.push(idx + 1);
+                            indices.push(idx + subdivisions + 1);
+                            indices.push(idx + subdivisions + 2);
+                        }
+                    }
+                }
+                
+                //Create a vertexData object
+                var vertexData = new BABYLON.VertexData();
+        
+                //Assign positions and indices to vertexData
+                vertexData.positions = positions;
+                vertexData.indices = indices;	
+                vertexData.uvs = uvs;
+                vertexData.normals = positions;
+        
+                vertexDataMap[key] = vertexData;
+                return vertexData;
+            }
+        
+            var getMeshForTile = function(tileId) {
+                
+                var tileR = 2 ** tileId.zoom;
+                var tileS = 2 * Math.PI / tileR;
+                var tx = tileId.x * tileS - Math.PI;
+                var ty = Math.PI - tileId.y * tileS;
+        
+                //Create a custom mesh  
+                var mesh = new BABYLON.Mesh("tile " + tileId, scene);
+                mesh.isVisible = false;
+                mesh.tileId = tileId;
+                mesh.rotate(up, -2 * Math.PI * tileId.x / tileR);
+                
+                //Apply vertexData to custom mesh
+                var vertexData = getVertexDataForTile(tileId.y, tileId.zoom);
+                vertexData.applyToMesh(mesh);
+        
+                // Create material from tile imagery
+                var mat = new BABYLON.StandardMaterial("mat " + tileId, scene);
+                mat.wireframe = false;
+                mat.backFaceCulling = true;
+                mat.ambientColor = new BABYLON.Color3(1, 1, 1);
+                mat.specularColor = new BABYLON.Color3(.5, .5, .5);
+                var quadkey = "";
+                var tileZ = tileId.zoom;
+        
+                while (tileZ > 0)
+                {
+                    tileZ--;
+                    quadkey += "0123"[((tileId.y >> tileZ) & 1) * 2 + ((tileId.x >> tileZ) & 1)];
+                }
+        
+                var promise = new Promise((resolve, reject) => {
+                    var texture = new BABYLON.Texture(
+                        "https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/" + quadkey + "?it=A&n=z", 
+                        scene,
+                        false,
+                        true,
+                        BABYLON.Texture.LINEAR_SAMPLINGMODE,
+                        async () => {
+                            mat.diffuseTexture = texture;
+                            mat.diffuseTexture.wrapU = 0;
+                            mat.diffuseTexture.wrapV = 0;
+                            mat.freeze();
+                            mesh.material = mat;
+                            scene.addMesh(mesh);
+                            mesh.freezeWorldMatrix();
+                            mesh.freezeNormals();
+                            mesh.doNotSyncBoundingInfo = true;
+                            mesh.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
+                            resolve(mesh);
+                        },
+                        () => {
+                            reject();
+                        });
+                });
+        
+                return promise;
+            };
+        
+            var loadedTiles = [];
+        
+            var getMeshes = async function(tileId) {
+                var angle = getTileAngle(tileId.y, tileId.zoom);
+        
+                if (tileId.zoom > 0 && angle < Math.PI / 8) {
+                    var mesh = await getMeshForTile(tileId);
+                    mesh.isVisible = true;
+                    mesh.tileAngle = angle;
+                    loadedTiles.push(mesh);
+                }
+                else {
+                    var children = tileId.children;
+                    getMeshes(children[0]);
+                    getMeshes(children[1]);
+                    getMeshes(children[2]);
+                    getMeshes(children[3]);
+                }
+            };
+        
+            getMeshes(new TileId(0, 0, 0));
+        
+            var oldRadius = -1;
+            
+            scene.registerAfterRender(() => 
+            {
+                if (camera.radius != oldRadius) {
+                    oldRadius = camera.radius;
+                    camera.angularSensibilityX = camera.angularSensibilityY = 2000 / Math.log2(camera.radius);
+                }
+        
+                if (loadedTiles.length > 0) {
+                    var index = Math.floor(Math.random() * loadedTiles.length);
+                    var mesh = loadedTiles[index];
+                    loadedTiles[index] = loadedTiles.pop();
+                    var tileId = mesh.tileId;
+        
+                    if (tileId.zoom < 5) {
+                        var children = tileId.children;
+                        var child0 = getMeshForTile(children[0]);
+                        var child1 = getMeshForTile(children[1]);
+                        var child2 = getMeshForTile(children[2]);
+                        var child3 = getMeshForTile(children[3]);
+        
+                        Promise.all([child0, child1, child2, child3]).then(async () => {
+                            scene.removeMesh(mesh);
+                            mesh.dispose();
+                            var mesh0 = await child0;
+                            var mesh1 = await child1;
+                            var mesh2 = await child2;
+                            var mesh3 = await child3;
+                            mesh0.isVisible = true;
+                            mesh1.isVisible = true;
+                            mesh2.isVisible = true;
+                            mesh3.isVisible = true;
+                            scene.addMesh(mesh0);
+                            scene.addMesh(mesh1);
+                            scene.addMesh(mesh2);
+                            scene.addMesh(mesh3);
+                            loadedTiles.push(mesh0);
+                            loadedTiles.push(mesh1);
+                            loadedTiles.push(mesh2);
+                            loadedTiles.push(mesh3);
+                            scene.createOrUpdateSelectionOctree();
+                        });
+                    }
+                }
+            });
+
+
+            function latLonToCartesian(lat, lon, radius) {
+                var latRad = BABYLON.Tools.ToRadians(lat);
+                var lonRad = BABYLON.Tools.ToRadians(lon - 100); // Ajustement de la longitude
+
+                var x = radius * Math.cos(latRad) * Math.sin(lonRad);
+                var y = radius * Math.sin(latRad);
+                var z = radius * Math.cos(latRad) * Math.cos(lonRad);
+
+                return new BABYLON.Vector3(x, y, z);
+            }
+
+
+
+
+            var countries = [
+                { name: "France", lat: 46.71109, lon: 5.7191036 },
+                { name: "USA", lat: 36.966428, lon: 105.844032 },
+            ];
+
+            var greenMaterial = new BABYLON.StandardMaterial("greenMaterial", scene);
+            greenMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0); // Vert
+
+            countries.forEach(function(country) {
+                var markerPosition = latLonToCartesian(country.lat, country.lon, 1.01); // Un peu plus grand que le rayon de la sphère pour que le marqueur apparaisse à la surface
+                var marker = BABYLON.MeshBuilder.CreateBox("marker_" + country.name, { size: 0.05 }, scene);
+                marker.position = markerPosition;
+                marker.material = greenMaterial;
+            });
+
+
+            function getCurrentPosition() {
+                return new Promise((resolve, reject) => {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(position => {
+                            resolve({
+                                lat: position.coords.latitude,
+                                lon: position.coords.longitude
+                            });
+                        }, reject);
+                    } else {
+                        reject(new Error("Geolocation is not supported by this browser."));
+                    }
+                });
+            }
+
+            getCurrentPosition().then(position => {
+                var myPosition = latLonToCartesian(position.lat, position.lon, 1.01);
+                var myMarkerMaterial = new BABYLON.StandardMaterial("myMarkerMaterial", scene);
+                myMarkerMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // Rouge
+                var myMarker = BABYLON.MeshBuilder.CreateBox("myMarker", { size: 0.05 }, scene);
+                myMarker.position = myPosition;
+                myMarker.material = myMarkerMaterial;
+            }).catch(error => {
+                console.error("Error getting current position:", error);
+            });
+
+            return scene;
+        };
+
+        window.initFunction = async function() {
+                    
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+
+    </script>
+</body>
+</html>
